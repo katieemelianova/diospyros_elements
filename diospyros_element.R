@@ -1,3 +1,8 @@
+library(dplyr)
+library(magrittr)
+library(readr)
+library(stringr)
+library(tidyverse)
 
 
 ############################
