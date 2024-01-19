@@ -34,10 +34,4 @@ plot_single_variable<-function(variable){
 plot_single_variable("Ni_soil")
 
 
-leaf_soil_species %>% colnames()
 
-both %>% colnames()
-plot(both$Ca_soil, both$Ca_leaf)
-plot(both$Co_soil, both$Co_leaf)
-plot(both$Mg_soil, both$Mg_leaf)
-plot(both$Ca_soil, both$Ca_leaf)
