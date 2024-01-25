@@ -3,14 +3,15 @@ library(magrittr)
 library(readr)
 library(stringr)
 library(tidyverse)
+library(ggplot2)
 
 
 ############################
 #       read in data       #
 ############################
 
-leaf<-read_delim("leaf_chemistry_nosymbols.txt", locale=locale(decimal_mark = ","))
-soil<-read_delim("soil_chemistry_nosymbols.txt", locale=locale(decimal_mark = ","))
+leaf<-read_delim("leaf_chemistry_nosymbols.txt", locale=locale(decimal_mark = ","), trim_ws=TRUE)
+soil<-read_delim("soil_chemistry_nosymbols.txt", locale=locale(decimal_mark = ","), trim_ws=TRUE)
 species<-read_delim("species_localities.tsv")
 
 #############################################################
@@ -22,6 +23,18 @@ new_colnames<-leaf_soil %>% colnames() %>% str_replace(".x", "_leaf") %>% str_re
 leaf_soil %<>% set_colnames(new_colnames)
 leaf_soil_species<-inner_join(leaf_soil, species, by=c("demandeur"="Ind ID"))
 
+colnames(leaf_soil_species)[2:46]
+
+leaf_soil_species %>% 
+  dplyr::select(colnames(leaf_soil_species)[2:46]) %>% 
+  dplyr::select(-c("_15N_leaf", "_13C_leaf", "_15N_soil", "_13C_soil", "...8")) %>% 
+  as.matrix() %>%
+  cor() %>%
+  heatmap()
+
+leaf_soil_species %>% dplyr::select("Cu_leaf") %>% pull()
+
+plot(leaf_soil_species$P_leaf, leaf_soil_species$K_leaf)
 
 ###########################################################################
 #     make basic function to plot an individual variable across species   #
@@ -36,7 +49,12 @@ plot_single_variable<-function(variable){
     theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))
 }
 
-plot_single_variable("Ni_soil")
+plot_single_variable("Cu_soil")
+leaf_soil_species %>% colnames()
+
+
+
+
 
 
 
