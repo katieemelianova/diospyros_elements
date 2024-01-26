@@ -12,7 +12,8 @@ library(ggplot2)
 
 leaf<-read_delim("leaf_chemistry_nosymbols.txt", locale=locale(decimal_mark = ","), trim_ws=TRUE)
 soil<-read_delim("soil_chemistry_nosymbols.txt", locale=locale(decimal_mark = ","), trim_ws=TRUE)
-species<-read_delim("species_localities.tsv")
+species_localities<-read_delim("species_localities.tsv")
+
 
 #############################################################
 #   label colnames according to tissue and join datasets    #
@@ -21,7 +22,8 @@ species<-read_delim("species_localities.tsv")
 leaf_soil<-inner_join(leaf, soil, by="demandeur")
 new_colnames<-leaf_soil %>% colnames() %>% str_replace(".x", "_leaf") %>% str_replace(".y", "_soil")
 leaf_soil %<>% set_colnames(new_colnames)
-leaf_soil_species<-inner_join(leaf_soil, species, by=c("demandeur"="Ind ID"))
+leaf_soil_species<-inner_join(leaf_soil, species_localities, by=c("demandeur"="Ind ID"))
+leaf_soil_species$demandeur[leaf_soil_species$demandeur == "1023h"] = "1023"
 
 colnames(leaf_soil_species)[2:46]
 
@@ -31,6 +33,7 @@ leaf_soil_species %>%
   as.matrix() %>%
   cor() %>%
   heatmap()
+
 
 leaf_soil_species %>% dplyr::select("Cu_leaf") %>% pull()
 
