@@ -118,22 +118,9 @@ dev.off()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 # plot soil samples elements
 soil_samples<-leaf_soil_species %>% 
   dplyr::select(demandeur, `N (g/kg)_soil`, `C (g/kg)_soil`, Ca_soil, Mg_soil, Na_soil, K_soil,  P_soil, Al_soil, Fe_soil, Mn_soil, Cr_soil, Co_soil, Ni_soil, Cu_soil, Cd_soil, Mo_soil, Pb_soil, Zn_soil, S_soil)
-
 
 demandeur<- soil_samples %>% dplyr::select(demandeur)
 soil_samples<-soil_samples %>% dplyr::select(-demandeur)
@@ -151,7 +138,6 @@ soil_samples$Soil[soil_samples$Soil ==  "ultramafic"] = "Ultramafic"
 #                                  species = nwk$tip.label), by=c("demandeur"="sample_id"), multiple = "all")
 
 
-
 p1 <- gheatmap(circ + geom_tiplab(size=5), soil_samples[, c("Co_soil", "Fe_soil", "Cr_soil"), drop=F], offset=.05, width=0.3,
                colnames_angle=90, low = "dodgerblue3", high = "red", font.size=6)
 library(ggnewscale)
@@ -164,20 +150,9 @@ gheatmap(p2, soil_samples[, c("Soil"), drop=F], offset=.035, width=.1,
 dev.off()
 
 
-
-
-
-
-
-
-
-
 # plot soil samples elements
 soil_samples<-leaf_soil_species %>% 
   dplyr::select(demandeur, `N (g/kg)_soil`, `C (g/kg)_soil`, Ca_soil, Mg_soil, Na_soil, K_soil,  P_soil, Al_soil, Fe_soil, Mn_soil, Cr_soil, Co_soil, Ni_soil, Cu_soil, Cd_soil, Mo_soil, Pb_soil, Zn_soil, S_soil)
-
-
-
 p1 <- gheatmap(circ + geom_tiplab(size=5), soil_samples[, c("Co_leaf", "Fe_leaf", "Cr_leaf"), drop=F], offset=.05, width=0.3,
                colnames_angle=90, low = "dodgerblue3", high = "red", font.size=6)
 library(ggnewscale)
@@ -190,29 +165,8 @@ gheatmap(p2, soil_samples[, c("Soil"), drop=F], offset=.035, width=.1,
 dev.off()
 
 
-
-
-
-row_means<-test %>% dplyr::select(-demandeur) %>% rowMeans()
-row_sds<-test %>% dplyr::select(-demandeur) %>% as.matrix %>% rowSds()
-demandeur<- test %>% dplyr::select(demandeur)
-test<-test %>% dplyr::select(-demandeur)
-test<-scale(test)
-#test <- test/row_means
-# z score: test <- (test - row_means)/row_sds
-test<-cbind(demandeur, test)
-
-test<-inner_join(test, data.frame(sample_id=nwk$sample_id,
-                            species = nwk$tip.label), by=c("demandeur"="sample_id"), multiple = "all")
-species_localities<-read_delim("species_localities.tsv")
-
-test<-inner_join(test, species_localities, by=c("demandeur"="Ind ID"))
-test<-column_to_rownames(test, var="species.x")
-
-test$Soil[test$Soil ==  "Sedimentary (Black clays)"] = "Sedimentary"
-test$Soil[test$Soil ==  "ultramafic"] = "Ultramafic"
-
-res.pca <- test %>% 
+# plot PCA loadings
+res.pca <- soil_samples %>% 
   dplyr::select(-c(demandeur, 
                    species.y, 
                    `Latitude (pink cells are estimated)`, 
@@ -221,44 +175,14 @@ res.pca <- test %>%
                    Vegetation, 
                    Soil)) %>%
   prcomp(scale=TRUE)
-
-res.pca$species <- test$Soil
-
+res.pca$species <- soil_samples$Soil
 autoplot(res.pca, loadings=TRUE, loadings.label=TRUE)
 
-png("PCA_leafchem_soiltype.png", width = 1000, height = 1000)
-fviz_pca_ind(res.pca, col.ind = test$Soil, title = "Leaf Chemistry", labelsize = 6) +
+# plot PCA of soil chem coloured by soiltype
+fviz_pca_ind(res.pca, col.ind = soil_samples$Soil, title = "Soil Chemistry", labelsize = 6) +
   theme(text = element_text(size = 30),
         axis.title = element_text(size = 30),
         axis.text = element_text(size = 30))
-dev.off()
-
-
-
-##########################################
-#     Plot SOIL chemistry onto tree      #
-##########################################
-
-
-p1 <- gheatmap(circ + geom_tiplab(size=5), test[, c("Co_soil", "Fe_soil", "Cr_soil"), drop=F], offset=.05, width=0.3,
-               colnames_angle=90, low = "dodgerblue3", high = "red", font.size=6)
-
-library(ggnewscale)
-p2 <- p1 + new_scale_fill()
-
-cols=c("white", "mediumblue", "darkmagenta", "darkgreen", "seagreen2", "magenta", "white")
-
-png("soil_chem_tree.png", width = 1000, height = 1000)
-gheatmap(p2, test[, c("Soil"), drop=F], offset=.035, width=.1,
-         colnames_angle=90, colnames_offset_y = 0.2) + scale_fill_manual(values=cols, na.value = "white") +
-  theme(text = element_text(size = 30), axis.title = element_text(size = 30), axis.text = element_text(size = 30))
-dev.off()
-
-
-
-##########################################
-#     Plot LEAF chemistry onto tree      #
-##########################################
 
 
 
