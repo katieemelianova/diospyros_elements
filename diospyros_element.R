@@ -25,19 +25,44 @@ leaf_soil %<>% set_colnames(new_colnames)
 leaf_soil_species<-inner_join(leaf_soil, species_localities, by=c("demandeur"="Ind ID"))
 leaf_soil_species$demandeur[leaf_soil_species$demandeur == "1023h"] = "1023"
 
-colnames(leaf_soil_species)[2:46]
 
+leaf_heatmap_colnames <-leaf_soil_species %>% 
+  dplyr::select(colnames(leaf_soil_species)[2:22]) %>% dplyr::select(colnames(leaf_soil_species)[2:22]) %>% 
+  dplyr::select(-c("_15N_leaf", "_13C_leaf")) %>% 
+  colnames() %>% 
+  str_remove("_leaf") %>% 
+  str_remove(" \\(g/kg\\)")
+
+
+
+
+png("heatmap_leaf.png", width = 2000, height = 2000)
+#par(oma=c(14,14,14,14))
 leaf_soil_species %>% 
-  dplyr::select(colnames(leaf_soil_species)[2:46]) %>% 
-  dplyr::select(-c("_15N_leaf", "_13C_leaf", "_15N_soil", "_13C_soil", "...8")) %>% 
+  dplyr::select(colnames(leaf_soil_species)[2:22]) %>% 
+  dplyr::select(-c("_15N_leaf", "_13C_leaf")) %>% 
+  set_colnames(leaf_heatmap_colnames) %>%
   as.matrix() %>%
   cor() %>%
-  heatmap()
+  pheatmap(treeheight_row=0, treeheight_col=0, fontsize = 100, legend=T)
+dev.off()
 
 
-leaf_soil_species %>% dplyr::select("Cu_leaf") %>% pull()
 
-plot(leaf_soil_species$P_leaf, leaf_soil_species$K_leaf)
+soil_heatmap_colnames <-leaf_soil_species %>% 
+  dplyr::select(colnames(leaf_soil_species)[30:46]) %>% colnames() %>% str_remove("_soil")
+png("heatmap_soil.png", width = 2000, height = 2000)
+par(oma=c(10,10,10,10))
+leaf_soil_species %>% 
+  dplyr::select(colnames(leaf_soil_species)[30:46]) %>% 
+  set_colnames(soil_heatmap_colnames) %>%
+  #dplyr::select(-c("_15N_soil", "_13C_soil")) %>% 
+  as.matrix() %>%
+  cor() %>%
+  pheatmap(treeheight_row=0, treeheight_col=0, fontsize = 100, legend = F)
+dev.off()
+
+leaf_soil_species %>% nrow()
 
 ###########################################################################
 #     make basic function to plot an individual variable across species   #
